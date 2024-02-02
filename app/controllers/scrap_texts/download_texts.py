@@ -1,12 +1,12 @@
-from controllers.scrap_write_text import scrap_write_text
-from controllers.scrap_clean_text import scrap_clean_text
-from controllers.scrap_text import scrap_text
+from controllers.scrap_texts.save_texts import save_texts
+from controllers.scrap_texts.clean_text import clean_text
+from controllers.scrap_texts.get_text import get_text
 import os
 
-def start_downloading_text(file_name):
+def download_texts(file_name):
     
     current_dir = os.path.dirname(__file__)
-    links_path = os.path.join(current_dir, "..", "links")
+    links_path = os.path.join(current_dir, "../..", "links")
     file_path = os.path.join(links_path, file_name)
     
     try:
@@ -15,10 +15,10 @@ def start_downloading_text(file_name):
             
         for link in links:
             print(f"Procesando URL: {link}")
-            text = scrap_text(link)
+            text = get_text(link)
             print(f"Texto obtenido: {text}")
             # clean_text = scrap_clean_text(text)
             # print(f"Texto limpio: {clean_text}")
-            scrap_write_text(text, link)
+            save_texts(text, link)
     except Exception as e:
         print(f"Error al escribir texto: {e}")
