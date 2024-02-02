@@ -1,9 +1,9 @@
 import os
 
-def merge_links(*archivos):
+def merge_files_with_links(*archivos):
     enlaces_totales = set()
     current_dir = os.path.dirname(__file__)
-    links_path = os.path.join(current_dir, "..", "links")
+    links_path = os.path.join(current_dir, "../..", "links")
     file_name = "total_links.txt"
     file_path = os.path.join(links_path, file_name)
     

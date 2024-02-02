@@ -1,8 +1,8 @@
 import os
 
-def write_links(links, file_name):
+def save_links(links, file_name):
     current_dir = os.path.dirname(__file__)
-    links_path = os.path.join(current_dir, "..", "links")
+    links_path = os.path.join(current_dir, "../..", "links")
     file_path = os.path.join(links_path, file_name)
     
     if not os.path.exists(links_path):
