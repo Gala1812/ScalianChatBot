@@ -6,11 +6,11 @@ import os
 load_dotenv()
 headers = {'User-Agent': os.getenv("USER_AGENT")}
 
-def scrap_text(url):
+def get_text(url):
     try:
         res = requests.get(url, headers=headers)
         res.raise_for_status()
-        soup = BeautifulSoup(res.text, "lxml")
+        soup = BeautifulSoup(res.text, "html.parser")
         return soup.get_text().strip()
     except requests.exceptions.RequestException as e:
         print(f"Error al obtener texto de {url}: {e}")

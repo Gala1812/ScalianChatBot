@@ -4,9 +4,9 @@ def clean_filename(url):
     # Mantener solo caracteres alfanuméricos y algunos caracteres especiales
     return "".join(c for c in url if c.isalnum() or c in ('.', '_', '-'))
 
-def scrap_write_text(text, url):
+def save_texts(text, url):
     current_dir = os.path.dirname(__file__)
-    texts_path = os.path.join(current_dir, "..", "texts")
+    texts_path = os.path.join(current_dir, "../..", "texts")
 
     clean_url = clean_filename(url)
     file_path = os.path.join(texts_path, f"{clean_url}.txt")

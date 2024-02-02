@@ -1,9 +1,14 @@
+from controllers.scrap_texts.download_texts import download_texts
 from controllers.start_scraping import start_scraping
-from controllers.start_downloading_text import start_downloading_text
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+filename = os.getenv("FILENAME")
 
 def main():
     # start_scraping()
-    start_downloading_text("links_home_cleaned.txt")
+    download_texts(filename)
 
 if __name__ == "__main__":
     main()
