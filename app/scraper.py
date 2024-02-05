@@ -6,9 +6,11 @@ from dotenv import load_dotenv
 load_dotenv()
 filename = os.getenv("FILENAME")
 
+
 def main():
-    # start_scraping()
-    download_texts(filename)
+    start_scraping()
+    # download_texts(filename)
+
 
 if __name__ == "__main__":
     main()
