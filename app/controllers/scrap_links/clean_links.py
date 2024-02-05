@@ -1,14 +1,81 @@
+from urllib.parse import urlparse, urlunparse
+
+
 def clean_links(links):
-    ignored_host = ['linkedin', 'instagram', 'twitter', 'indizen', 'cookieyes', 'wordpress', 'g2', 'capterra', 'facebook', 'youtube', 'png', 'jpg']
+    allowed_domains = ["scalian.com", "scalian-spain.es"]
+
+    ignored_host = [
+        "linkedin",
+        "instagram",
+        "twitter",
+        "indizen",
+        "cookieyes",
+        "wordpress",
+        "g2",
+        "capterra",
+        "facebook",
+        "youtube",
+    ]
+
+    ignored_extensions = [
+        "pdf",
+        "jpg",
+        "jpeg",
+        "png",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+        "ppt",
+        "pptx",
+        "zip",
+        "rar",
+        "7z",
+        "tar",
+        "gz",
+        "tgz",
+        "mp3",
+        "mp4",
+        "avi",
+        "mov",
+        "wmv",
+        "flv",
+        "wav",
+        "aiff",
+        "wma",
+        "ogg",
+        "webm",
+        "m4a",
+        "aac",
+        "flac",
+        "alac",
+        "wma",
+        "bmp",
+        "gif",
+        "tiff",
+        "psd",
+        "raw",
+        "svg",
+        "eps",
+        "ai",
+    ]
+
     try:
         links = [
-            link
+            urlunparse(
+                urlparse(link)._replace(
+                    netloc=urlparse(link).netloc.replace("www.www.", "www.")
+                )
+            )
             for link in links
-            if link.startswith('https://')
-            and all(host not in link for host in ignored_host)
+            if all(host not in link.lower() for host in ignored_host)
+            and not any(link.lower().endswith(ext) for ext in ignored_extensions)
+            and link.startswith("https://")
+            and any(domain in urlparse(link).netloc for domain in allowed_domains)
         ]
-        links = list(dict.fromkeys(links))
+        links = list(set(links))
         print("Limpiando enlaces ...\n")
     except Exception as e:
         print(f"Error al limpiar enlaces: {e}")
+
     return links
