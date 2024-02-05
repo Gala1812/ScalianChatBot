@@ -1,8 +1,14 @@
 import os
+from urllib.parse import urlparse
+from controllers.scrap_texts.clean_text import clean_text
 
 def clean_filename(url):
-    # Mantener solo caracteres alfanuméricos y algunos caracteres especiales
-    return "".join(c for c in url if c.isalnum() or c in ('.', '_', '-'))
+    parsed_url = urlparse(url)
+    host_name = parsed_url.netloc.replace(".", "_")
+    path_segments = parsed_url.path.strip("/").split("/")
+    path_name = "_".join(path_segments)
+
+    return f"{host_name}_{path_name}"
 
 def save_texts(text, url):
     current_dir = os.path.dirname(__file__)
@@ -17,6 +23,7 @@ def save_texts(text, url):
     try:
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(text)
-        print(f"Texto escrito en texts/{clean_url}.txt")
+        clean_text(file_path)
+        print(f"Texto escrito en texts/{clean_url}.txt\n")
     except Exception as e:
         print(f"Error al escribir texto: {e}")
