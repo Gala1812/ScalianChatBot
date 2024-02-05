@@ -16,9 +16,6 @@ def download_texts(file_name):
         for link in links:
             print(f"Procesando URL: {link}")
             text = get_text(link)
-            print(f"Texto obtenido: {text}")
-            # clean_text = scrap_clean_text(text)
-            # print(f"Texto limpio: {clean_text}")
             save_texts(text, link)
     except Exception as e:
         print(f"Error al escribir texto: {e}")
