@@ -2,6 +2,22 @@ from urllib.parse import urlparse, urlunparse
 
 
 def clean_links(links):
+    """ Clean a list of links by removing unwanted links based on specified criteria.
+    Args:
+        links (list): A list of links to be cleaned.
+    Returns:
+        list: A list of cleaned links that meet the specified criteria.
+
+    Examples:
+        >>> links = [
+        ...     "https://www.example.com",
+        ...     "https://www.linkedin.com",
+        ...     "https://www.example.com/file.pdf"
+        ... ]
+        >>> clean_links(links)
+        ['https://www.example.com']
+    """
+    
     allowed_domains = ["scalian.com", "scalian-spain.es"]
 
     ignored_host = [
