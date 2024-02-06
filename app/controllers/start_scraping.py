@@ -14,6 +14,15 @@ main_url = os.getenv("URL")
 
 
 def start_scraping():
+    """ Start the scraping process.
+    This function performs multiple steps of scraping, including finding links from the main URL,
+    cleaning the links, getting deep links, comparing and saving the links, and merging the files.
+    Args:
+        None
+    Returns:
+        None
+    """
+    
     inicio = time.time()
 
     links = find_links_from_url(main_url)

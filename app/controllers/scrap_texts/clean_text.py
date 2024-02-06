@@ -1,7 +1,15 @@
 import re
 
-
 def clean_text(text):
+    """ Clean a text file by removing empty lines and organizing sections.
+    Args:
+        text (str): The path to the text file to clean.
+    Returns:
+        None
+    Examples:
+        >>> clean_text("example.txt")
+    """
+    
     with open(text, "r+") as archivo:
         lineas = archivo.readlines()
         secciones = []
