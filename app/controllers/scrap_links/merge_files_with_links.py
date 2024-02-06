@@ -2,6 +2,17 @@ import os
 
 
 def merge_files_with_links(*archivos):
+    """ Merge multiple files containing links into a single file.
+    Args:
+        *archivos (str): Variable number of file names to merge.
+    Returns:
+        None
+    Examples:
+        >>> merge_files_with_links("file1.txt", "file2.txt", "file3.txt")
+        Se encontraron 100 enlaces
+        Enlaces unidos con éxito
+    """
+    
     enlaces_totales = set()
     current_dir = os.path.dirname(os.path.abspath(__file__))
     app_path = os.path.join(current_dir, "..", "..")

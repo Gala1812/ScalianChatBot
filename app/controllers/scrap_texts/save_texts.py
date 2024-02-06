@@ -6,6 +6,15 @@ from controllers.scrap_texts.remove_footer_sspain import remove_footer_sspain
 
 
 def save_texts(title, text, url):
+    """ Save the title and text content to a file, with additional processing steps.
+    Args:
+        title (str): The title of the text.
+        text (str): The content of the text.
+        url (str): The URL associated with the text.
+    Returns:
+        None
+    """
+    
     current_dir = os.path.dirname(__file__)
     texts_path = os.path.join(current_dir, "../..", "texts")
     spain_path = os.path.join(texts_path, "spain")

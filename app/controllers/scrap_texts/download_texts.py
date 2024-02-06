@@ -4,6 +4,17 @@ from controllers.scrap_texts.get_text import get_text
 import os
 
 def download_texts(file_name):
+    """ Download and process texts from a file containing URLs.
+    Args:
+        file_name (str): The name of the file containing the URLs.
+    Returns:
+        None
+    Examples:
+        >>> download_texts("url_list.txt")
+        Procesando URL: https://www.example.com
+        Procesando URL: https://www.example.com/page1
+        Procesando URL: https://www.example.com/page2
+    """
     
     current_dir = os.path.dirname(__file__)
     links_path = os.path.join(current_dir, "../..", "links")
