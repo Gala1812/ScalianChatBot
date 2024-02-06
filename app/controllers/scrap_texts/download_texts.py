@@ -15,7 +15,7 @@ def download_texts(file_name):
             
         for link in links:
             print(f"Procesando URL: {link}")
-            text = get_text(link)
-            save_texts(text, link)
+            title, text = get_text(link)
+            save_texts(title, text, link)
     except Exception as e:
         print(f"Error al escribir texto: {e}")
