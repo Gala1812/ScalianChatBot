@@ -16,17 +16,23 @@ def remove_footer_sspain(text):
 
     with open(text, "r+") as archivo:
         lines = archivo.readlines()
-        index_footer = None
-        for i in reversed(range(len(lines))):
-            if lines[i].strip().upper() == footer:
-                index_footer = i
-                break
-        index_substring = None
-        for i in reversed(range(len(lines))):
-            if substring.upper() in lines[i].strip().upper():
-                index_substring = i
-                break
 
+        index_footer = next(
+            (
+                i
+                for i in reversed(range(len(lines)))
+                if lines[i].strip().upper() == footer
+            ),
+            None,
+        )
+        index_substring = next(
+            (
+                i
+                for i in reversed(range(len(lines)))
+                if substring.upper() in lines[i].strip().upper()
+            ),
+            None,
+        )
         if index_footer is not None:
             lines = lines[:index_footer]
 
