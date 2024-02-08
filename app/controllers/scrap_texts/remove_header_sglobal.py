@@ -19,7 +19,6 @@ def remove_header_sglobal(texto):
             (i + 1 for i in reversed(range(len(lines))) if lines[i].strip() == header),
             None,
         )
-        print(f"Encontre el header {header} en la linea {index_join_us}")
         if index_join_us is not None:
             lines = lines[index_join_us:]
             doc = "".join(lines)
