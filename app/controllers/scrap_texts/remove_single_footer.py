@@ -1,11 +1,4 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-substring = os.getenv("SUBSTRING2")
-
-
-def remove_footer_sglobal(text):
+def remove_single_footer(text, footer):
     """Remove the footer section from a given text file.
     Args:
         text (str): The path to the text file to remove the footer from.
@@ -15,16 +8,16 @@ def remove_footer_sglobal(text):
 
     with open(text, "r+") as archivo:
         lines = archivo.readlines()
-        index_substring = next(
+        index = next(
             (
-                i
+                i - 1
                 for i in reversed(range(len(lines)))
-                if substring.upper() in lines[i].strip().upper()
+                if lines[i].strip().replace(" ", "") == footer
             ),
             None,
         )
-        if index_substring is not None:
-            lines = lines[:index_substring]
+        if index is not None:
+            lines = lines[:index]
 
         archivo.seek(0)
         archivo.truncate()

@@ -1,11 +1,4 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-header = os.getenv("HEADER")
-
-
-def remove_header_sspain(texto):
+def remove_header_sspain(texto, header):
     """Remove the header section from a given text file.
     Args:
         texto (str): The path to the text file to remove the header from.
@@ -19,7 +12,7 @@ def remove_header_sspain(texto):
             (
                 i + 1
                 for i in reversed(range(len(lines)))
-                if lines[i].strip().upper() == header
+                if lines[i].strip().replace(" ", "") == header
             ),
             None,
         )
