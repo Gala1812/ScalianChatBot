@@ -24,7 +24,7 @@ for loader in loaders:
     documents.extend(loader.load())
 
 # Chunk and Embeddings
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+text_splitter = CharacterTextSplitter(chunk_size=1500, chunk_overlap=0)
 documents = text_splitter.split_documents(documents)
 
 embeddings = OpenAIEmbeddings()
