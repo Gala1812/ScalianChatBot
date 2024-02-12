@@ -1,21 +1,7 @@
 import os
 from controllers.scrap_texts.clean_text import clean_text
 from controllers.scrap_texts.clean_filename import clean_filename
-from controllers.scrap_texts.remove_header_sspain import remove_header_sspain
-from controllers.scrap_texts.remove_multiple_footer import remove_multiple_footer
-from controllers.scrap_texts.remove_single_header import remove_single_header
-from controllers.scrap_texts.remove_single_footer import remove_single_footer
-from dotenv import load_dotenv
-
-load_dotenv()
-header = os.getenv("HEADER")
-footer = os.getenv("FOOTER")
-h_experts = os.getenv("H_EXPERTS")
-f_experts = os.getenv("F_EXPERTS")
-footer = os.getenv("FOOTER")
-subfooter = os.getenv("SUBFOOTER")
-spfooter = os.getenv("SPFOOTER")
-
+from controllers.scrap_texts.advanced_filters import advanced_filters
 
 def save_texts(title, text, url):
     """Save the title and text content to a file, with additional processing steps.
@@ -49,16 +35,9 @@ def save_texts(title, text, url):
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(text)
             clean_text(file_path)
-
-            if "scalian.com/es/experts" in url:
-                remove_single_header(file_path, h_experts)
-                remove_single_footer(file_path, f_experts)
-            elif "scalian-spain" in url:
-                remove_single_header(file_path, header)
-                remove_multiple_footer(file_path, footer, subfooter)
-            elif "scalian.com/es" in url:
-                remove_header_sspain(file_path, header)
-                remove_single_footer(file_path, spfooter)
+            
+            isActive = True
+            advanced_filters(isActive, url, file_path)
 
             with open(file_path, "r+", encoding="utf-8") as f:
                 content = f.read()
