@@ -8,7 +8,7 @@ def remove_single_header(texto, header):
 
     with open(texto, "r+") as archivo:
         lines = archivo.readlines()
-        index_join_us = next(
+        index = next(
             (
                 i + 1
                 for i in range(len(lines))
@@ -16,8 +16,8 @@ def remove_single_header(texto, header):
             ),
             None,
         )
-        if index_join_us is not None:
-            lines = lines[index_join_us:]
+        if index is not None:
+            lines = lines[index:]
             doc = "".join(lines)
             archivo.seek(0)
             archivo.truncate()
