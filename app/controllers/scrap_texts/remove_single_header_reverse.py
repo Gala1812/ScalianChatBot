@@ -1,11 +1,4 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-header = os.getenv("HEADER")
-
-
-def remove_header_sspain(texto):
+def remove_single_header_reverse(texto, header):
     """Remove the header section from a given text file.
     Args:
         texto (str): The path to the text file to remove the header from.
@@ -15,16 +8,16 @@ def remove_header_sspain(texto):
 
     with open(texto, "r+") as archivo:
         lines = archivo.readlines()
-        index_join_us = next(
+        index = next(
             (
                 i + 1
                 for i in reversed(range(len(lines)))
-                if lines[i].strip().upper() == header
+                if lines[i].strip().replace(" ", "") == header
             ),
             None,
         )
-        if index_join_us is not None:
-            lines = lines[index_join_us:]
+        if index is not None:
+            lines = lines[index:]
             doc = "".join(lines)
             archivo.seek(0)
             archivo.truncate()

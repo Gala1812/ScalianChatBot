@@ -1,12 +1,4 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-footer = os.getenv("FOOTER")
-substring = os.getenv("SUBSTRING")
-
-
-def remove_footer_sspain(text):
+def remove_multiple_footer(text, footer, substring):
     """Remove the footer section from a given text file.
     Args:
         text (str): The path to the text file to remove the footer from.
@@ -21,7 +13,7 @@ def remove_footer_sspain(text):
             (
                 i
                 for i in reversed(range(len(lines)))
-                if lines[i].strip().upper() == footer
+                if lines[i].strip().replace(" ", "") == footer
             ),
             None,
         )
@@ -29,7 +21,7 @@ def remove_footer_sspain(text):
             (
                 i
                 for i in reversed(range(len(lines)))
-                if substring.upper() in lines[i].strip().upper()
+                if lines[i].strip().replace(" ", "") == substring
             ),
             None,
         )
