@@ -2,37 +2,17 @@ import os
 import requests
 import json
 import openai
+import emoji
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import reflex as rx
-
-# TODO: The 'openai.api_base' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(base_url=os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1"))'
-# openai.api_base = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
-
-BAIDU_API_KEY = os.getenv("BAIDU_API_KEY")
-BAIDU_SECRET_KEY = os.getenv("BAIDU_SECRET_KEY")
-
-
-def get_access_token():
-    """
-    :return: access_token
-    """
-    url = "https://aip.baidubce.com/oauth/2.0/token"
-    params = {
-        "grant_type": "client_credentials",
-        "client_id": BAIDU_API_KEY,
-        "client_secret": BAIDU_SECRET_KEY,
-    }
-    return str(requests.post(url, params=params).json().get("access_token"))
-
 
 class QA(rx.Base):
     """A question and answer pair."""
 
     question: str
     answer: str
-
 
 DEFAULT_CHATS = {
     "Main": [],
@@ -63,7 +43,7 @@ class State(rx.State):
     # Whether the modal is open.
     modal_open: bool = False
 
-    api_type: str = "baidu" if BAIDU_API_KEY else "openai"
+    api_type: str = "openai"
 
     def create_chat(self):
         """Create a new chat."""
@@ -116,28 +96,16 @@ class State(rx.State):
         if question == "":
             return
         
-        print("Question: ", question)
-        print("API TYPE: ", self.api_type)
-        # Imprime la api key de openai
-        print("API KEY: ", openai.api_key)
-
-        if self.api_type == "openai":
-            model = self.openai_process_question
-        else:
-            model = self.baidu_process_question
+        model = self.openai_process_question
 
         async for value in model(question):
             yield value
 
     async def openai_process_question(self, question: str):
-        """Get the response from the API.
+        """Get the response from the API."""
 
-        Args:
-            form_data: A dict with the current question.
-        """
-
-        # Add the question to the list of questions.
-        qa = QA(question=question, answer="")
+        # Add the question to the list of questions with a person emoji.
+        qa = QA(question = emoji.emojize("👨🏼‍💼 ") + question, answer="")
         self.chats[self.current_chat].append(qa)
 
         # Clear the input and start the processing.
@@ -148,6 +116,7 @@ class State(rx.State):
         messages = [
             {"role": "system", "content": "You are a friendly chatbot named Scalian ChatBot."}
         ]
+        
         for qa in self.chats[self.current_chat]:
             messages.append({"role": "user", "content": qa.question})
             messages.append({"role": "assistant", "content": qa.answer})
@@ -169,45 +138,5 @@ class State(rx.State):
                 self.chats = self.chats
                 yield
 
-        # Toggle the processing flag.
-        self.processing = False
-
-    async def baidu_process_question(self, question: str):
-        """Get the response from the API.
-
-        Args:
-            form_data: A dict with the current question.
-        """
-        # Add the question to the list of questions.
-        qa = QA(question=question, answer="")
-        self.chats[self.current_chat].append(qa)
-
-        # Clear the input and start the processing.
-        self.processing = True
-        yield
-
-        # Build the messages.
-        messages = []
-        for qa in self.chats[self.current_chat]:
-            messages.append({"role": "user", "content": qa.question})
-            messages.append({"role": "assistant", "content": qa.answer})
-
-        # Remove the last mock answer.
-        messages = json.dumps({"messages": messages[:-1]})
-        # Start a new session to answer the question.
-        session = requests.request(
-            "POST",
-            "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token="
-            + get_access_token(),
-            headers={"Content-Type": "application/json"},
-            data=messages,
-        )
-
-        json_data = json.loads(session.text)
-        if "result" in json_data.keys():
-            answer_text = json_data["result"]
-            self.chats[self.current_chat][-1].answer += answer_text
-            self.chats = self.chats
-            yield
         # Toggle the processing flag.
         self.processing = False
