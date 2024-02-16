@@ -1,18 +1,38 @@
 import os
+import re
+import getpass
 import requests
 import json
 import openai
 import emoji
+import tiktoken
+import reflex as rx
 from openai import OpenAI
+from dotenv import load_dotenv
+from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import TextLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_community.vectorstores import Chroma
+
+load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-import reflex as rx
+openai_api_key = os.getenv("OPENAI_API_KEY")
+store = os.getenv("STORE")
+database = os.getenv("DATABASE")
+index = os.getenv("INDEX")
+
 
 class QA(rx.Base):
     """A question and answer pair."""
 
     question: str
     answer: str
+
 
 DEFAULT_CHATS = {
     "Main": [],
@@ -22,28 +42,17 @@ DEFAULT_CHATS = {
 class State(rx.State):
     """The app state."""
 
-    # A dict from the chat name to the list of questions and answers.
     chats: dict[str, list[QA]] = DEFAULT_CHATS
-
-    # The current chat name.
     current_chat = "Main"
-
-    # The current question.
     question: str
-
-    # Whether we are processing the question.
     processing: bool = False
-
-    # The name of the new chat.
     new_chat_name: str = ""
-
-    # Whether the drawer is open.
     drawer_open: bool = False
-
-    # Whether the modal is open.
     modal_open: bool = False
-
     api_type: str = "openai"
+    is_vector: bool = False
+    is_empty: bool = True
+    is_database_stored: bool = False
 
     def create_chat(self):
         """Create a new chat."""
@@ -88,55 +97,101 @@ class State(rx.State):
         """
         return list(self.chats.keys())
 
+    async def load_documents(self):
+        folder_path = store
+
+        text_loader_kwargs = {"autodetect_encoding": True}
+        loader = DirectoryLoader(
+            folder_path,
+            loader_cls=TextLoader,
+            loader_kwargs=text_loader_kwargs,
+            show_progress=True,
+            silent_errors=True,
+        )
+        documents = loader.load()
+
+        text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=10)
+        docs = text_splitter.split_documents(documents)
+        embeddings = OpenAIEmbeddings()
+        db = FAISS.from_documents(docs, embeddings)
+        db.save_local("scalian_database")
+        self.is_vector = True
+
+    async def check_store_documents(self):
+        try:
+            if not os.path.exists(store):
+                os.makedirs(store)
+            if len(os.listdir(store)) != 0:
+                self.is_empty = False
+                print("Documents are already stored...")
+                if not self.is_empty and not self.is_vector:
+                    print("Building vector store...")
+                    await self.load_documents()
+                    await self.check_database_stored()
+            else:
+                self.is_empty = True
+                print("No documents are stored...")
+        except Exception as e:
+            print(e)
+
+    async def check_database_stored(self):
+        current_dir = os.path.dirname(__file__)
+        folder_documents = os.path.join(current_dir, "..", database)
+
+        if os.path.exists(folder_documents) and os.path.exists(
+            folder_documents + "/" + index
+        ):
+            print("Database exists...")
+            self.is_database_stored = True
+        else:
+            print("Database does not exist...")
+            self.is_database_stored = False
+
     async def process_question(self, form_data: dict[str, str]):
-        # Get the question from the form
-        question = form_data["question"]
+        await self.check_database_stored()
+        if not self.is_database_stored:
+            if not self.is_vector:
+                await self.check_store_documents()
+        if self.is_database_stored:
+            # Get the question from the form
+            question = form_data["question"]
 
-        # Check if the question is empty
-        if question == "":
-            return
-        
-        model = self.openai_process_question
+            # Check if the question is empty
+            if question == "":
+                return
 
-        async for value in model(question):
-            yield value
+            model = self.openai_process_question
+
+            async for value in model(question):
+                yield value
 
     async def openai_process_question(self, question: str):
         """Get the response from the API."""
 
         # Add the question to the list of questions with a person emoji.
-        qa = QA(question = emoji.emojize("👨🏼‍💼 ") + question, answer="")
+        qa = QA(question=emoji.emojize("👨🏼‍💼 ") + question, answer="")
         self.chats[self.current_chat].append(qa)
 
+        llm = ChatOpenAI()
         # Clear the input and start the processing.
         self.processing = True
         yield
 
-        # Build the messages.
-        messages = [
-            {"role": "system", "content": "You are a friendly chatbot named Scalian ChatBot."}
-        ]
-        
-        for qa in self.chats[self.current_chat]:
-            messages.append({"role": "user", "content": qa.question})
-            messages.append({"role": "assistant", "content": qa.answer})
+        embeddings = OpenAIEmbeddings()
+        new_db = FAISS.load_local("scalian_database", embeddings)
 
-        # Remove the last mock answer.
-        messages = messages[:-1]
+        retriever = new_db.as_retriever()
+        docs = retriever.invoke(question)
+        # Use retrieved documents to generate response
+        response = ""
 
-        # Start a new session to answer the question.
-        session = client.chat.completions.create(model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
-        messages=messages,
-        stream=True)
+        for doc in docs:
+            response += "🤖 " + doc.page_content + "\n"
+            print(f"🤓 {response}\n")
 
-        # Stream the results, yielding after every word.
-        for item in session:
-            if hasattr(item.choices[0].delta, "content"):
-                answer_text = item.choices[0].delta.content
-                if answer_text is not None:
-                    self.chats[self.current_chat][-1].answer += answer_text
-                self.chats = self.chats
-                yield
+        # Update the last QA pair with the response
+        self.chats[self.current_chat][-1].answer = response
+        yield
 
         # Toggle the processing flag.
         self.processing = False
