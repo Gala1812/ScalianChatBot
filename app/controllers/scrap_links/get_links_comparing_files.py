@@ -1,6 +1,7 @@
 from controllers.scrap_links.check_link_health import check_link_health
 from controllers.scrap_links.find_links_from_url import find_links_from_url
 from controllers.scrap_links.clean_links import clean_links
+import requests
 
 def get_links_comparing_files(cleaned_links, previous_links):
     """ Get links by comparing cleaned links with previous links.
