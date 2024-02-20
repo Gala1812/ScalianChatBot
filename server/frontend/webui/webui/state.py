@@ -1,23 +1,13 @@
-import getpass
-import json
 import os
-import re
 
-import emoji
-import openai
 import reflex as rx
-import requests
-import tiktoken
 from dotenv import load_dotenv
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.text_splitter import (
-    CharacterTextSplitter,
-    RecursiveCharacterTextSplitter,
-)
+from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_community.vectorstores import FAISS, Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from openai import OpenAI
 
@@ -290,6 +280,66 @@ class State(rx.State):
     #     # Toggle the processing flag.
     #     self.processing = False
 
+    # async def openai_process_question(self, question: str):
+    #     """Get the response from the API."""
+
+    #     # Add the question to the list of questions with a person emoji.
+    #     qa = QA(question=question, answer="")
+    #     self.chats[self.current_chat].append(qa)
+
+    #     llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, max_tokens=1000)
+    #     embeddings = OpenAIEmbeddings()
+    #     new_db = FAISS.load_local("scalian_database", embeddings)
+
+    #     # Clear the input and start the processing.
+    #     retriever = new_db.as_retriever()
+
+    #     prompt = ChatPromptTemplate.from_messages(
+    #         [
+    #             MessagesPlaceholder(variable_name="chat_history"),
+    #             ("user", "{input}"),
+    #             (
+    #                 "user",
+    #                 "Given the above conversation, generate a search query to look up in order to get information relevant to the conversation",
+    #             ),
+    #         ]
+    #     )
+
+    #     retriever_chain = create_history_aware_retriever(llm, retriever, prompt)
+
+    #     promptb = ChatPromptTemplate.from_messages(
+    #         [
+    #             (
+    #                 "system",
+    #                 "Answer the user's questions based on the below context:\n\n{context}",
+    #             ),
+    #             MessagesPlaceholder(variable_name="chat_history"),
+    #             ("user", "{input}"),
+    #         ]
+    #     )
+
+    #     stuff_documents_chain = create_stuff_documents_chain(llm, promptb)
+
+    #     conversation_rag_chain = create_retrieval_chain(
+    #         retriever_chain, stuff_documents_chain
+    #     )
+
+    #     response = conversation_rag_chain.invoke(
+    #         {
+    #             "chat_history": [msg.answer for msg in self.chats[self.current_chat]],
+    #             "input": question,
+    #         }
+    #     )
+
+    #     self.processing = True
+    #     yield
+
+    #     self.chats[self.current_chat][-1].answer = response["answer"]
+    #     yield
+
+    #     # Toggle the processing flag.
+    #     self.processing = False
+
     async def openai_process_question(self, question: str):
         """Get the response from the API."""
 
@@ -321,7 +371,7 @@ class State(rx.State):
             [
                 (
                     "system",
-                    "Answer the user's questions based on the below context:\n\n{context}",
+                    "Eres un asistente llamado Lian, eres educado, amable, y te gusta ayudar a los usuarios a encontrar las respuestas, aunque, solo debes contestar basado en el contexto: {context}. Si te hacen una pregunta que parece sin contexto, revisa bien si puedes contestarla añadiendo al contexto Scalian como empresa de referencia. Si no puedes contestar, puedes decir que no dispones de esa información y proveerle algun numero de telefono o dirección de la oficina en Madrid, o puedes pedir informacion extra al usuario. Agrega algunos emojis a medida que contestas para que den sentido a las respuestas, y no olvides ser amable y educado. Contesta en Markdown:",
                 ),
                 MessagesPlaceholder(variable_name="chat_history"),
                 ("user", "{input}"),
@@ -344,7 +394,14 @@ class State(rx.State):
         self.processing = True
         yield
 
-        self.chats[self.current_chat][-1].answer = response["answer"]
+        answer_text = response["answer"]
+        print("Tipo de dato de la respuesta:", type(answer_text))
+
+        # Mostrar los atributos y métodos disponibles en la respuesta
+        print("Atributos y métodos disponibles en la respuesta:")
+        print(dir(answer_text))
+
+        self.chats[self.current_chat][-1].answer = answer_text
         yield
 
         # Toggle the processing flag.
