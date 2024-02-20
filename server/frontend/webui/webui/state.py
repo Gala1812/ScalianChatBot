@@ -1,26 +1,25 @@
+import getpass
+import json
 import os
 import re
-import getpass
-import requests
-import json
-import openai
+
 import emoji
-import tiktoken
+import openai
 import reflex as rx
-from openai import OpenAI
+import requests
+import tiktoken
 from dotenv import load_dotenv
-from langchain_community.document_loaders import DirectoryLoader
-from langchain_community.document_loaders import TextLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.text_splitter import (
+    CharacterTextSplitter,
+    RecursiveCharacterTextSplitter,
+)
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_community.vectorstores import FAISS, Chroma
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from openai import OpenAI
 
 load_dotenv()
 
@@ -250,8 +249,8 @@ class State(rx.State):
     #     embeddings = OpenAIEmbeddings()
     #     new_db = FAISS.load_local("scalian_database", embeddings)
 
-    #     # retriever = new_db.as_retriever()
-    #     # docs = retriever.invoke(question)
+    # retriever = new_db.as_retriever()
+    # docs = retriever.invoke(question)
 
     #     results = new_db.similarity_search_with_relevance_scores(question, k=3)
     #     print("Len results: ", len(results))
@@ -298,7 +297,7 @@ class State(rx.State):
         qa = QA(question=question, answer="")
         self.chats[self.current_chat].append(qa)
 
-        llm = ChatOpenAI()
+        llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, max_tokens=1000)
         embeddings = OpenAIEmbeddings()
         new_db = FAISS.load_local("scalian_database", embeddings)
 
@@ -334,32 +333,18 @@ class State(rx.State):
         conversation_rag_chain = create_retrieval_chain(
             retriever_chain, stuff_documents_chain
         )
-        
+
         response = conversation_rag_chain.invoke(
-            {"chat_history": [msg.answer for msg in self.chats[self.current_chat]], "input": question}
+            {
+                "chat_history": [msg.answer for msg in self.chats[self.current_chat]],
+                "input": question,
+            }
         )
-        
-        # response = conversation_rag_chain.invoke(
-        #     {"chat_history": , "input": question}
-        # )
-        # print(response)
 
         self.processing = True
         yield
 
-        # prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-
-        # prompt = prompt_template.format(question=question)
-        # print("PROMPT: ", prompt)
-
-        # model = ChatOpenAI(temperature=0)
-        # response_text = model.invoke(prompt)
-        # formatted_response = f"{response_text}"
-        # print("Texto: ", formatted_response[-1])
-
-        # Update the last QA pair with the response
-
-        self.chats[self.current_chat][-1].answer = response['answer']
+        self.chats[self.current_chat][-1].answer = response["answer"]
         yield
 
         # Toggle the processing flag.
