@@ -1,10 +1,17 @@
-"""The main Chat app."""
+"""Welcome to Reflex! This file outlines the steps to create a basic app."""
+# from rxconfig import config
 
 import reflex as rx
 
-from webui import styles
-from webui.components import chat, modal, navbar, sidebar
-from webui.state import State
+from webui import styles  # noqa: F401
+from webui.state import State  # noqa: F401
+from webui.components import chat, navbar, sidebar, modal # noqa: F401
+
+
+
+def error_text() -> rx.Component:
+    """return a text component to show error."""
+    return rx.text(State.error_texts, text_align="center", font_weight="bold", color="red",)
 
 @rx.page(
     title="Scalian ChatBot",
@@ -26,6 +33,6 @@ def index() -> rx.Component:
     )
 
 
-# Add state and page to the app.
+# Create app instance and add index page.
 app = rx.App(style=styles.base_style)
 app.add_page(index)
