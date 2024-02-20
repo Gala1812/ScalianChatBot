@@ -4,7 +4,7 @@ import getpass
 import requests
 import json
 import openai
-import emoji
+# import emoji
 import tiktoken
 import reflex as rx
 from openai import OpenAI
@@ -15,8 +15,10 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
@@ -25,6 +27,16 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 store = os.getenv("STORE")
 database = os.getenv("DATABASE")
 index = os.getenv("INDEX")
+
+PROMPT_TEMPLATE = """
+The following is a conversation with an AI assistant. The assistant is helpful, clever, and very friendly. After each dot, insert a new line. Answer the question based only on the following context:
+
+{context}
+
+---
+
+Answer the question based on the above context: {question}
+"""
 
 
 class QA(rx.Base):
@@ -110,7 +122,9 @@ class State(rx.State):
         )
         documents = loader.load()
 
-        text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=10)
+        text_splitter = CharacterTextSplitter(
+            chunk_size=500, chunk_overlap=250, length_function=len, add_start_index=True
+        )
         docs = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings()
         db = FAISS.from_documents(docs, embeddings)
@@ -139,7 +153,7 @@ class State(rx.State):
         folder_documents = os.path.join(current_dir, "..", database)
 
         if os.path.exists(folder_documents) and os.path.exists(
-            folder_documents + "/" + index
+            f"{folder_documents}/{index}"
         ):
             print("Database exists...")
             self.is_database_stored = True
@@ -149,9 +163,8 @@ class State(rx.State):
 
     async def process_question(self, form_data: dict[str, str]):
         await self.check_database_stored()
-        if not self.is_database_stored:
-            if not self.is_vector:
-                await self.check_store_documents()
+        if not self.is_database_stored and not self.is_vector:
+            await self.check_store_documents()
         if self.is_database_stored:
             # Get the question from the form
             question = form_data["question"]
@@ -165,14 +178,69 @@ class State(rx.State):
             async for value in model(question):
                 yield value
 
+    # async def openai_process_question(self, question: str):
+    #     """Get the response from the API."""
+
+    #     # Add the question to the list of questions with a person emoji.
+    #     qa = QA(question=question, answer="")
+    #     self.chats[self.current_chat].append(qa)
+
+    #     # llm = ChatOpenAI()
+    #     # Clear the input and start the processing.
+    #     self.processing = True
+    #     yield
+
+    #     embeddings = OpenAIEmbeddings()
+    #     new_db = FAISS.load_local("scalian_database", embeddings)
+
+    #     # retriever = new_db.as_retriever()
+    #     # docs = retriever.invoke(question)
+
+    #     results = new_db.similarity_search_with_relevance_scores(question, k=3)
+    #     print("Len results: ", len(results))
+    #     print("Results: ", results)
+    #     if len(results) == 0 or results[0][1] < 0.75:
+    #         prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE).format(
+    #             context="",  # Remove context in this case
+    #             question=question,
+    #             additional_text="""\n\nI don't have that information in my database yet. Try rephrasing your question, or contact customer service at 911911911."""
+    #         )
+    #     else:
+
+    #     # print(f"Found {len(results)} documents")
+    #     # print(results)
+
+    #         context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
+    #         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+    #         prompt = prompt_template.format(context=context_text, question=question)
+    #         print(prompt)
+
+    #     model = ChatOpenAI(temperature=0)
+    #     response_text = model.invoke(prompt)
+    #     formatted_response = f"🤖 {response_text} "
+
+    #     # Use retrieved documents to generate response
+    #     # response = ""
+
+    #     # for doc in docs:
+    #     #     response += "🤖 " + doc.page_content + "\n"
+    #     #     print(f"🤓 {response}\n")
+
+    #     # Update the last QA pair with the response
+    #     self.chats[self.current_chat][-1].answer = formatted_response
+    #     yield
+
+    #     # Toggle the processing flag.
+    #     self.processing = False
+
     async def openai_process_question(self, question: str):
         """Get the response from the API."""
 
         # Add the question to the list of questions with a person emoji.
-        qa = QA(question=emoji.emojize("👨🏼‍💼 ") + question, answer="")
+        qa = QA(question=question, answer="")
         self.chats[self.current_chat].append(qa)
 
-        llm = ChatOpenAI()
+        # llm = ChatOpenAI()
         # Clear the input and start the processing.
         self.processing = True
         yield
@@ -180,17 +248,43 @@ class State(rx.State):
         embeddings = OpenAIEmbeddings()
         new_db = FAISS.load_local("scalian_database", embeddings)
 
-        retriever = new_db.as_retriever()
-        docs = retriever.invoke(question)
-        # Use retrieved documents to generate response
-        response = ""
+        # retriever = new_db.as_retriever()
+        # docs = retriever.invoke(question)
 
-        for doc in docs:
-            response += "🤖 " + doc.page_content + "\n"
-            print(f"🤓 {response}\n")
+        results = new_db.similarity_search_with_relevance_scores(question, k=3)
+        print("Len results: ", len(results))
+        print("Results: ", results)
+        if len(results) == 0 or results[0][1] < 0.5:
+            prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE).format(
+                context="",  # Remove context in this case
+                question=question,
+                additional_text="""\n\nI don't have that information in my database yet. Try rephrasing your question, or contact customer service at 911911911.""",
+            )
+        else:
+
+            # print(f"Found {len(results)} documents")
+            # print(results)
+
+            context_text = "\n\n---\n\n".join(
+                [doc.page_content for doc, _score in results]
+            )
+            prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+            prompt = prompt_template.format(context=context_text, question=question)
+            print(prompt)
+
+        model = ChatOpenAI(temperature=0)
+        response_text = model.invoke(prompt)
+        formatted_response = f"🤖 {response_text} "
+
+        # Use retrieved documents to generate response
+        # response = ""
+
+        # for doc in docs:
+        #     response += "🤖 " + doc.page_content + "\n"
+        #     print(f"🤓 {response}\n")
 
         # Update the last QA pair with the response
-        self.chats[self.current_chat][-1].answer = response
+        self.chats[self.current_chat][-1].answer = formatted_response
         yield
 
         # Toggle the processing flag.

@@ -1,9 +1,8 @@
 import reflex as rx
 
-from webui import styles
-from webui.components import loading_icon
-from webui.state import QA, State
-
+from webui import styles  # noqa: F401
+from webui.components import loading_icon  # noqa: F401
+from webui.state import State, QA  # noqa: F401
 
 def message(qa: QA) -> rx.Component:
     """A single question/answer message.

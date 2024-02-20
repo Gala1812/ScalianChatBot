@@ -1,8 +1,7 @@
 import reflex as rx
 
-from webui import styles
-from webui.state import State
-
+from webui.state import State # noqa: F401
+from webui import styles # noqa: F401
 
 def navbar():
     return rx.box(

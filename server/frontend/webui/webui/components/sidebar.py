@@ -1,8 +1,7 @@
 import reflex as rx
 
-from webui import styles
-from webui.state import State
-
+from webui import styles # noqa: F401
+from webui.state import State # noqa: F401
 
 def sidebar_chat(chat: str) -> rx.Component:
     """A sidebar chat item.

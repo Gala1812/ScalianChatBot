@@ -1,6 +1,5 @@
 import reflex as rx
-from webui.state import State
-
+from webui.state import State  # noqa: F401
 
 def modal() -> rx.Component:
     """A modal to create a new chat."""

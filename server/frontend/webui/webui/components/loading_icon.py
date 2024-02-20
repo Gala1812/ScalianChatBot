@@ -1,6 +1,5 @@
 import reflex as rx
 
-
 class LoadingIcon(rx.Component):
     """A custom loading icon component."""
 
