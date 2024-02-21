@@ -15,24 +15,28 @@ def message(qa: QA) -> rx.Component:
     """
     return rx.box(
         rx.box(
-            rx.text(
+            rx.markdown(
                 qa.question,
                 bg=styles.border_color,
                 shadow=styles.shadow_light,
                 **styles.message_style,
+                background_color=styles.border_color,
+                padding="0.5em 1em",
+                margin="1em 0",
             ),
             text_align="right",
-            margin_top="1em",
         ),
         rx.box(
-            rx.text(
+            rx.markdown(
                 qa.answer,
                 bg=styles.accent_color,
                 shadow=styles.shadow_light,
                 **styles.message_style,
+                background_color=styles.accent_color,
+                padding="0.5em 1em",
+                margin="1em 0",
             ),
-            text_align="left",
-            padding_top="1em",
+            text_align="justify",
         ),
         width="100%",
     )
@@ -91,25 +95,29 @@ def action_bar() -> rx.Component:
                     is_external=True,
                     href="https://github.com/Gala1812",
                     color="#D70F5F",
-                ), " / ",
+                ),
+                " / ",
                 rx.link(
                     rx.text("Carol", as_="c"),
                     is_external=True,
                     href="https://github.com/CGP20",
                     color="#D70F5F",
-                ), " / ",
+                ),
+                " / ",
                 rx.link(
                     rx.text("Javi", as_="j"),
                     is_external=True,
                     href="https://github.com/Nicklessss",
                     color="#D70F5F",
-                ), " / ",
+                ),
+                " / ",
                 rx.link(
                     rx.text("David", as_="d"),
                     is_external=True,
                     href="https://github.com/luisdavidtribino",
                     color="#D70F5F",
-                ), " / ",
+                ),
+                " / ",
                 rx.link(
                     rx.text("Camilo", as_="c"),
                     is_external=True,
@@ -119,7 +127,7 @@ def action_bar() -> rx.Component:
                 font_size="xs",
                 color="#fff6",
                 text_align="center",
-                padding="0.5rem 0"
+                padding="0.5rem 0",
             ),
             width="100%",
             max_w="3xl",
