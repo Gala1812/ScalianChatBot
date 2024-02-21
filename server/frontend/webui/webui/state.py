@@ -1,5 +1,5 @@
 import os
-
+import random
 import reflex as rx
 from dotenv import load_dotenv
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -18,16 +18,6 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 store = os.getenv("STORE")
 database = os.getenv("DATABASE")
 index = os.getenv("INDEX")
-
-PROMPT_TEMPLATE = """
-The following is a conversation with an AI assistant. The assistant is helpful, clever, and very friendly. After each dot, insert a new line. Answer the question based only on the following context:
-
-{context}
-
----
-
-Answer the question based on the above context: {question}
-"""
 
 
 class QA(rx.Base):
@@ -56,6 +46,7 @@ class State(rx.State):
     is_vector: bool = False
     is_empty: bool = True
     is_database_stored: bool = False
+    is_database_loaded: bool = False
 
     def create_chat(self):
         """Create a new chat."""
@@ -169,177 +160,6 @@ class State(rx.State):
             async for value in model(question):
                 yield value
 
-    # async def openai_process_question(self, question: str):
-    #     """Get the response from the API."""
-
-    #     # Add the question to the list of questions with a person emoji.
-    #     qa = QA(question=question, answer="")
-    #     self.chats[self.current_chat].append(qa)
-
-    #     # llm = ChatOpenAI()
-    #     # Clear the input and start the processing.
-    #     self.processing = True
-    #     yield
-
-    #     embeddings = OpenAIEmbeddings()
-    #     new_db = FAISS.load_local("scalian_database", embeddings)
-
-    #     # retriever = new_db.as_retriever()
-    #     # docs = retriever.invoke(question)
-
-    #     results = new_db.similarity_search_with_relevance_scores(question, k=3)
-    #     print("Len results: ", len(results))
-    #     print("Results: ", results)
-    #     if len(results) == 0 or results[0][1] < 0.75:
-    #         prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE).format(
-    #             context="",  # Remove context in this case
-    #             question=question,
-    #             additional_text="""\n\nI don't have that information in my database yet. Try rephrasing your question, or contact customer service at 911911911."""
-    #         )
-    #     else:
-
-    #     # print(f"Found {len(results)} documents")
-    #     # print(results)
-
-    #         context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    #         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    #         prompt = prompt_template.format(context=context_text, question=question)
-    #         print(prompt)
-
-    #     model = ChatOpenAI(temperature=0)
-    #     response_text = model.invoke(prompt)
-    #     formatted_response = f"🤖 {response_text} "
-
-    #     # Use retrieved documents to generate response
-    #     # response = ""
-
-    #     # for doc in docs:
-    #     #     response += "🤖 " + doc.page_content + "\n"
-    #     #     print(f"🤓 {response}\n")
-
-    #     # Update the last QA pair with the response
-    #     self.chats[self.current_chat][-1].answer = formatted_response
-    #     yield
-
-    #     # Toggle the processing flag.
-    #     self.processing = False
-
-    # async def openai_process_question(self, question: str):
-    #     """Get the response from the API."""
-
-    #     # Add the question to the list of questions with a person emoji.
-    #     qa = QA(question=question, answer="")
-    #     self.chats[self.current_chat].append(qa)
-
-    #     # llm = ChatOpenAI()
-    #     # Clear the input and start the processing.
-    #     self.processing = True
-    #     yield
-
-    #     embeddings = OpenAIEmbeddings()
-    #     new_db = FAISS.load_local("scalian_database", embeddings)
-
-    # retriever = new_db.as_retriever()
-    # docs = retriever.invoke(question)
-
-    #     results = new_db.similarity_search_with_relevance_scores(question, k=3)
-    #     print("Len results: ", len(results))
-    #     print("Results: ", results)
-    #     if len(results) == 0 or results[0][1] < 0.5:
-    #         prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE).format(
-    #             context="",  # Remove context in this case
-    #             question=question,
-    #             additional_text="""I don't have that information in my database yet. Try rephrasing your question, or contact customer service at 911911911.""",
-    #         )
-    #     else:
-
-    #         # print(f"Found {len(results)} documents")
-    #         # print(results)
-
-    #         context_text = "".join([doc.page_content for doc, _score in results])
-    #         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    #         prompt = prompt_template.format(context=context_text, question=question)
-    #         print("PROMPT: ", prompt)
-
-    #     model = ChatOpenAI(temperature=0)
-    #     response_text = model.invoke(prompt)
-    #     formatted_response = f"{response_text}"
-    #     print("Texto: ", formatted_response[-1])
-
-    #     # Use retrieved documents to generate response
-    #     # response = ""
-
-    #     # for doc in docs:
-    #     #     response += "🤖 " + doc.page_content + "\n"
-    #     #     print(f"🤓 {response}\n")
-
-    #     # Update the last QA pair with the response
-    #     self.chats[self.current_chat][-1].answer = formatted_response
-    #     yield
-
-    #     # Toggle the processing flag.
-    #     self.processing = False
-
-    # async def openai_process_question(self, question: str):
-    #     """Get the response from the API."""
-
-    #     # Add the question to the list of questions with a person emoji.
-    #     qa = QA(question=question, answer="")
-    #     self.chats[self.current_chat].append(qa)
-
-    #     llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, max_tokens=1000)
-    #     embeddings = OpenAIEmbeddings()
-    #     new_db = FAISS.load_local("scalian_database", embeddings)
-
-    #     # Clear the input and start the processing.
-    #     retriever = new_db.as_retriever()
-
-    #     prompt = ChatPromptTemplate.from_messages(
-    #         [
-    #             MessagesPlaceholder(variable_name="chat_history"),
-    #             ("user", "{input}"),
-    #             (
-    #                 "user",
-    #                 "Given the above conversation, generate a search query to look up in order to get information relevant to the conversation",
-    #             ),
-    #         ]
-    #     )
-
-    #     retriever_chain = create_history_aware_retriever(llm, retriever, prompt)
-
-    #     promptb = ChatPromptTemplate.from_messages(
-    #         [
-    #             (
-    #                 "system",
-    #                 "Answer the user's questions based on the below context:\n\n{context}",
-    #             ),
-    #             MessagesPlaceholder(variable_name="chat_history"),
-    #             ("user", "{input}"),
-    #         ]
-    #     )
-
-    #     stuff_documents_chain = create_stuff_documents_chain(llm, promptb)
-
-    #     conversation_rag_chain = create_retrieval_chain(
-    #         retriever_chain, stuff_documents_chain
-    #     )
-
-    #     response = conversation_rag_chain.invoke(
-    #         {
-    #             "chat_history": [msg.answer for msg in self.chats[self.current_chat]],
-    #             "input": question,
-    #         }
-    #     )
-
-    #     self.processing = True
-    #     yield
-
-    #     self.chats[self.current_chat][-1].answer = response["answer"]
-    #     yield
-
-    #     # Toggle the processing flag.
-    #     self.processing = False
-
     async def openai_process_question(self, question: str):
         """Get the response from the API."""
 
@@ -347,9 +167,12 @@ class State(rx.State):
         qa = QA(question=question, answer="")
         self.chats[self.current_chat].append(qa)
 
-        llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, max_tokens=1000)
+        llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, max_tokens=2000)
         embeddings = OpenAIEmbeddings()
-        new_db = FAISS.load_local("scalian_database", embeddings)
+
+        if not self.is_database_loaded:
+            new_db = FAISS.load_local("scalian_database", embeddings)
+            is_database_loaded = True
 
         # Clear the input and start the processing.
         retriever = new_db.as_retriever()
@@ -371,7 +194,7 @@ class State(rx.State):
             [
                 (
                     "system",
-                    "Eres un asistente llamado Lian, eres educado, amable, y te gusta ayudar a los usuarios a encontrar las respuestas, aunque, solo debes contestar basado en el contexto: {context}. Si te hacen una pregunta que parece sin contexto, revisa bien si puedes contestarla añadiendo al contexto Scalian como empresa de referencia. Si no puedes contestar, puedes decir que no dispones de esa información y proveerle algun numero de telefono o dirección de la oficina en Madrid, o puedes pedir informacion extra al usuario. Agrega algunos emojis a medida que contestas para que den sentido a las respuestas, y no olvides ser amable y educado. Contesta en Markdown:",
+                    "Eres un asistente llamado Lian, eres educado, amable, y te gusta ayudar a los usuarios a encontrar las respuestas, aunque, solo debes contestar basado en el contexto: {context}. Si te hacen una pregunta que parece sin contexto, revisa bien si puedes contestarla añadiendo al contexto Scalian como empresa de referencia. Contesta siempre dado la informacion completa, si no puedes contestar, puedes decir que no dispones de esa información y proveerle algun numero de telefono o dirección de la oficina en Madrid, o puedes pedir informacion extra al usuario. Agrega algunos emojis a medida que contestas para que den sentido a las respuestas, y no olvides ser amable y educado. Siempre que puedas termina con la url para dirigirle al lugar de donde haz encontrado la información, no olvides resaltar el enlace en negrita. Contesta en Markdown",
                 ),
                 MessagesPlaceholder(variable_name="chat_history"),
                 ("user", "{input}"),
@@ -384,25 +207,26 @@ class State(rx.State):
             retriever_chain, stuff_documents_chain
         )
 
-        response = conversation_rag_chain.invoke(
+        self.processing = True
+        yield
+
+        # # Agrega algunos emojis para darle más personalidad al mensaje
+        emojis = ["😬", "🧑🏻‍💻", "🙏", "🚀", "🧠", "⏳", "⏰", "⌛️"]
+
+        estoy_pensando = f"{random.choice(emojis)} ..."
+        self.chats[self.current_chat][-1].answer = estoy_pensando
+        yield
+
+        response = await conversation_rag_chain.ainvoke(
             {
                 "chat_history": [msg.answer for msg in self.chats[self.current_chat]],
                 "input": question,
             }
         )
 
-        self.processing = True
-        yield
-
         answer_text = response["answer"]
-        print("Tipo de dato de la respuesta:", type(answer_text))
-
-        # Mostrar los atributos y métodos disponibles en la respuesta
-        print("Atributos y métodos disponibles en la respuesta:")
-        print(dir(answer_text))
-
         self.chats[self.current_chat][-1].answer = answer_text
+
         yield
 
-        # Toggle the processing flag.
         self.processing = False
