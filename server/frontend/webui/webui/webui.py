@@ -6,6 +6,7 @@ from webui import styles
 from webui.components import chat, modal, navbar, sidebar
 from webui.state import State
 
+
 @rx.page(
     title="Scalian ChatBot",
     description="A chatbot application. for Scalian users",
@@ -14,6 +15,7 @@ def index() -> rx.Component:
     """The main app."""
     return rx.vstack(
         navbar(),
+        chat.header(),
         chat.chat(),
         chat.action_bar(),
         sidebar(),
