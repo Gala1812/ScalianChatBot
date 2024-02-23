@@ -87,4 +87,21 @@ base_style = {
         "align_items": "stretch",
         "justify_content": "space-between",
     },
+    "table": {
+        "margin": "0.4em",
+        "border-collapse": "collapse",
+        "border-radius": "1em",
+        "overflow": "hidden",
+    },
+    "td": {
+        "padding": "1em",
+        "background": "#000",
+        "border-bottom": "1px solid #1C6B93",
+    },
+    "th": {
+        "padding": "1em",
+        "background": "#000",
+        "border-bottom": "1px solid #1C6B93",
+    },
+    "li::marker": {"color": "#07efff"},
 }

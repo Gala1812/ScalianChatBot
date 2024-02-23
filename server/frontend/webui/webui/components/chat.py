@@ -5,6 +5,20 @@ from webui.components import loading_icon
 from webui.state import QA, State
 
 
+def header() -> rx.Component:
+    """The header and the welcome message."""
+    return rx.box(
+        rx.heading(
+            "Hello! My name is Lian. How can I assist you today? 😊",
+            size="md",
+            color=styles.accennt_light,
+            width="100%",
+            padding="2em 0",
+            text_align="center",
+        ),
+    )
+
+
 def message(qa: QA) -> rx.Component:
     """A single question/answer message.
 
