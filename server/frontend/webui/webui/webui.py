@@ -4,9 +4,8 @@
 import reflex as rx
 
 from webui import styles  # noqa: F401
-from webui.state import State  # noqa: F401
 from webui.components import chat, navbar, sidebar, modal # noqa: F401
-
+from webui.state import State  # noqa: F401
 
 
 def error_text() -> rx.Component:
@@ -21,6 +20,7 @@ def index() -> rx.Component:
     """The main app."""
     return rx.vstack(
         navbar(),
+        chat.header(),
         chat.chat(),
         chat.action_bar(),
         sidebar(),
@@ -30,6 +30,8 @@ def index() -> rx.Component:
         min_h="100vh",
         align_items="stretch",
         spacing="0",
+        # background_image="A-propos-listing.jpg",
+        # background_size="top",
     )
 
 

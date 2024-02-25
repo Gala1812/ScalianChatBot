@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DATA = os.environ['DATA']
-openai_api_key = os.environ["OPENAI_API_KEY"]
+openai_api_key = 'os.getenv("OPENAI_API_KEY")'
 
 #  load data from the folder with TextLoader function and encode if necessary
 class TextLoader:

@@ -105,10 +105,10 @@ class State(rx.State):
         documents = loader.load()
 
         text_splitter = CharacterTextSplitter(
-            chunk_size=200, chunk_overlap=20, length_function=len, add_start_index=True
+            chunk_size=1000, chunk_overlap=0, #length_function=len, add_start_index=True
         )
         docs = text_splitter.split_documents(documents)
-        embeddings = OpenAIEmbeddings()
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
         db = FAISS.from_documents(docs, embeddings)
         db.save_local("scalian_database")
         self.is_vector = True
@@ -165,11 +165,12 @@ class State(rx.State):
         """Get the response from the API."""
 
         # Add the question to the list of questions with a person emoji.
+
         qa = QA(question=question, answer="")
         self.chats[self.current_chat].append(qa)
 
-        llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, max_tokens=2000)
-        embeddings = OpenAIEmbeddings()
+        llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0.3, max_tokens=500)
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
         if not self.is_database_loaded:
             new_db = FAISS.load_local("scalian_database", embeddings)
@@ -195,8 +196,23 @@ class State(rx.State):
             [
                 (
                     "system",
-                    "Eres un asistente llamado Lian, eres educado, amable, y te gusta ayudar a los usuarios a encontrar las respuestas, aunque, solo debes contestar basado en el contexto: {context}. Si te hacen una pregunta que parece sin contexto, revisa bien si puedes contestarla añadiendo al contexto Scalian como empresa de referencia. Contesta siempre dado la informacion completa, si no puedes contestar, puedes decir que no dispones de esa información y proveerle algun numero de telefono o dirección de la oficina en Madrid, o puedes pedir informacion extra al usuario. Agrega algunos emojis a medida que contestas para que den sentido a las respuestas, y no olvides ser amable y educado. Siempre que puedas termina con la url para dirigirle al lugar de donde haz encontrado la información, no olvides resaltar el enlace en negrita. Contesta en Markdown",
-                ),
+                    """
+                    You are an assistant named Lian, you are polite, 
+                    Answer the user's questions based on the context: 
+                    {context}
+                    You must answer the question on the language of the question:
+                    the question on English must answer on English,
+                    the question on Spanish must answer on Spanish,
+                    question on French must answer on French.
+                    
+                    If you are asked a question that out of context, check if you can answer it by adding Scalian as a reference company.
+                    Always answer providing complete information, if you can't answer, you can say that you do not have that information and 
+                    provide them with a phone number or the address of the office in Madrid, or you can ask the user for additional information.
+                    Add some emojis as you answer to give meaning to the responses, and don't forget to be kind and polite.
+                    Whenever possible, end with the URL in bold to direct them to the place where you found the information,.
+                    don't forget to highlight the link in bold. Answer in Markdown.
+                    """
+                    ),
                 MessagesPlaceholder(variable_name="chat_history"),
                 ("user", "{input}"),
             ]
@@ -214,9 +230,14 @@ class State(rx.State):
         # # Agrega algunos emojis para darle más personalidad al mensaje
         emojis = ["😬", "🧑🏻‍💻", "🙏", "🚀", "🧠", "⏳", "⏰", "⌛️"]
 
-        estoy_pensando = f"{random.choice(emojis)} ..."
-        self.chats[self.current_chat][-1].answer = estoy_pensando
+        thinking = f"{random.choice(emojis)} ..."
+        self.chats[self.current_chat][-1].answer = thinking
         yield
+
+        # Prepare chat_history by filtering out or replacing placeholders
+        # prepared_chat_history = [
+        #     msg.answer if msg.answer != estoy_pensando else msg.answer for msg in self.chats[self.current_chat]
+        # ]
 
         response = await conversation_rag_chain.ainvoke(
             {
