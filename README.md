@@ -16,4 +16,21 @@ Este proyecto tiene como objetivo desarrollar un chatbot o asistente capaz de ma
     - Se generaron embeddings a partir del contenido organizado y se almacenaron en una base de datos vectorial Faiss para facilitar búsquedas rápidas y precisas durante las interacciones con el chatbot.
     - Utilizando el framework LangChain, se creó un backend robusto que gestiona las solicitudes del chatbot, la recuperación de información desde Faiss y la conexión con la API de OpenAI para respuestas contextuales.
 
+## Instalación
+
+Sigue las instrucciones para ver la documentacion
+
+
+## 📖 Ver la documentación
+
+[Documentación](https://www.notion.so/834c68c20997416dac22de61275b5c53?v=df1039e52bd64604b5cfa1b354a55bed&pvs=4)
+
+
+## Autores
+
+- [@Galyna](https://github.com/Gala1812)
+- [@Carol](https://github.com/CGP20)
+- [@Camilo](https://github.com/Gala1812)
+- [@Javi](https://github.com/kamilodev)
+- [@David](https://github.com/luisdavidtribino)
 
