@@ -8,6 +8,7 @@ from langchain_openai import ChatOpenAI
 import os
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
 # Set your OpenAI API key
@@ -17,7 +18,7 @@ os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
 
 # Data Ingestion for .txt files
-txt_loader = DirectoryLoader('../server/chatbot/TextDocuments', glob="**/*.txt")
+txt_loader = DirectoryLoader('TextDocuments', glob="**/*.txt")
 loaders = [txt_loader]
 documents = []
 for loader in loaders:
