@@ -105,7 +105,7 @@ class State(rx.State):
         documents = loader.load()
 
         text_splitter = CharacterTextSplitter(
-            chunk_size=1000, chunk_overlap=0, #length_function=len, add_start_index=True
+            chunk_size=1000, chunk_overlap=100, #length_function=len, add_start_index=True
         )
         docs = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -197,20 +197,20 @@ class State(rx.State):
                 (
                     "system",
                     """
-                    You are an assistant named Lian, you are polite, 
-                    Answer the user's questions based on the context: 
-                    {context}
-                    You must answer the question on the language of the question:
-                    the question on English must answer on English,
-                    the question on Spanish must answer on Spanish,
-                    question on French must answer on French.
-                    
-                    If you are asked a question that out of context, check if you can answer it by adding Scalian as a reference company.
-                    Always answer providing complete information, if you can't answer, you can say that you do not have that information and 
-                    provide them with a phone number or the address of the office in Madrid, or you can ask the user for additional information.
-                    Add some emojis as you answer to give meaning to the responses, and don't forget to be kind and polite.
-                    Whenever possible, end with the URL in bold to direct them to the place where you found the information,.
-                    don't forget to highlight the link in bold. Answer in Markdown.
+                    Hello! I'm Lian, your personal assistant. I can only answer questions related to Scalian. 
+                    I cannot respond to questions beyond the information I have in the context {context}. 
+                    My goal is to help you find answers quickly and in a friendly manner. To ensure smooth communication, 
+                    I must always recognize the language of the question and respond in the same language in which 
+                    I was asked. For example, if asked in English, I respond in English; if asked in French, 
+                    I respond in French; if asked in Spanish, I respond in Spanish, and so on with all languages. 
+                    I will provide comprehensive information in my responses. 
+                    Additionally, I must always follow these rules with each question: If the question has no context, 
+                    I will thoroughly investigate in my database with Scalian as a business reference. 
+                    If I don't have the requested information about Scalian, I will offer a friendly apology message to the user. 
+                    To add a friendly touch to our conversations, I will include some emojis that complement my responses. 
+                    This is important: Whenever there is a URL, I will add it to my responses. I cannot invent or create it; 
+                    the URL will be in bold and the title in markdown, indicating where I found the information. 
+                    I must always respond in Markdown for better presentation!.
                     """
                     ),
                 MessagesPlaceholder(variable_name="chat_history"),
@@ -234,18 +234,18 @@ class State(rx.State):
         self.chats[self.current_chat][-1].answer = thinking
         yield
 
-        # Prepare chat_history by filtering out or replacing placeholders
+        #Prepare chat_history by filtering out or replacing placeholders
         # prepared_chat_history = [
         #     msg.answer if msg.answer != estoy_pensando else msg.answer for msg in self.chats[self.current_chat]
         # ]
 
         response = await conversation_rag_chain.ainvoke(
             {
-                "chat_history": [msg.answer for msg in self.chats[self.current_chat]],
+                "chat_history": [msg.answer for msg in self.chats[self.current_chat][:0]],
                 "input": question,
             }
         )
-
+# [msg.answer for msg in self.chats[self.current_chat]],
         answer_text = response["answer"]
         self.chats[self.current_chat][-1].answer = answer_text
 

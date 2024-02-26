@@ -9,7 +9,7 @@ def header() -> rx.Component:
     return rx.box(
         rx.heading("Hello! My name is Lian. How can I assist you today? 😊",
                    size="md",
-                   color_scheme=styles.accennt_light,
+                   color=styles.accennt_light,
                    width="100%",
                    padding="2em 0",
                    text_align="center"),
@@ -65,6 +65,7 @@ def chat() -> rx.Component:
         overflow="hidden",
         padding_bottom="5em",
     )
+
 
 
 def action_bar() -> rx.Component:
